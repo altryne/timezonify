@@ -8,11 +8,11 @@ Additional purpose is to be above to hover a date, and see that date in the User
 
 ## Features
 
-🎯 Detect date in ISO 8061 format (short and long) 
-🚀 Highlight the dates visually
-🌎 Show the date relative to the User timezone. 
-🍻 Transform dates into a long format (2021-11-08 -> 2021-11-08 12:00:00.000)
-📋 Copy the UTC timestamp of a date to clipboard. 
+🎯 Detect date in ISO 8061 format (short and long)  
+🚀 Highlight the dates visually  
+🌎 Show the date relative to the User timezone.   
+🍻 Transform dates into a long format (2021-11-08 -> 2021-11-08 12:00:00.000)  
+📋 Copy the UTC timestamp of a date to clipboard.   
 
 
 
