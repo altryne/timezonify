@@ -2,7 +2,8 @@ import dayjs = require('dayjs');
 import * as vscode from 'vscode';
 import { subscribeToDocumentChanges, DATE_MENTION } from './diagnostics';
 
-const COMMAND = 'code-actions-sample.command';
+const ENABLE_COMMAND = 'timezonify.enableCodeLens';
+const DISABLE_COMMAND = 'timezonify.disableCodeLens';
 const COPY_UTC = 'timezonify.copy';
 var ncp = require("copy-paste");
 
@@ -11,7 +12,21 @@ export function activate(context: vscode.ExtensionContext) {
 	const dateDiagnostics = vscode.languages.createDiagnosticCollection("date");
 	context.subscriptions.push(dateDiagnostics);
 
-	subscribeToDocumentChanges(context, dateDiagnostics);
+    const dt: vscode.TextEditorDecorationType = vscode.window.createTextEditorDecorationType({
+        gutterIconPath: context.asAbsolutePath('src/img/date.png'),
+        gutterIconSize: 'cover',
+        
+        light: {
+            // this color will be used in light color themes
+            backgroundColor: 'rgba(12, 180, 100, 0.1)',
+        },
+        dark: {
+            // this color will be used in dark color themes
+            backgroundColor: 'rgba(12, 180, 100, 0.1)',
+        }   
+    });
+
+	subscribeToDocumentChanges(context, dateDiagnostics, dt);
 
 	context.subscriptions.push(
 		vscode.languages.registerCodeActionsProvider('*', new DatesDiagnostics(), {
@@ -20,13 +35,22 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand(COMMAND, () => vscode.env.openExternal(vscode.Uri.parse('https://unicode.org/emoji/charts-12.0/full-emoji-list.html')))
-	);
-	context.subscriptions.push(
 		vscode.commands.registerCommand(COPY_UTC, (utc) => ncp.copy(utc, function () {
             vscode.window.showInformationMessage('Copied UTC to clipboard');
           }))
 	);
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand(ENABLE_COMMAND, () => {
+            vscode.workspace.getConfiguration('timezonify').update('enableCodeLens', true, true);
+        })
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand(DISABLE_COMMAND, () => {
+            vscode.workspace.getConfiguration('timezonify').update('enableCodeLens', false, false);
+        })
+    );
 
 
 }
@@ -67,7 +91,7 @@ export class DatesDiagnostics implements vscode.CodeActionProvider {
 		const fix = new vscode.CodeAction(`Convert to ISO 8601 formated date`, vscode.CodeActionKind.QuickFix);
 		fix.edit = new vscode.WorkspaceEdit();
         let formatedDate = diagnostic.message.split('Timestamp: ')[1];
-		fix.edit.replace(document.uri, new vscode.Range(range.start, range.start.translate(0, formatedDate.length)), dayjs.unix(parseInt(formatedDate)).toISOString());
+		fix.edit.replace(document.uri, diagnostic.range, dayjs.unix(parseInt(formatedDate)).toISOString());
 		return fix;
 	}
 }
